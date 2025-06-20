@@ -1,3 +1,5 @@
+groovy
+
 pipeline {
   agent {
     node {
@@ -16,28 +18,31 @@ pipeline {
           )
   }
 
-environment {
-    APP_NAME = "STUDENT_APP"
-    APP_ENV = "DEV"
-}
+  environment {
+      APP_NAME = "STUDENT_APP"
+      APP_ENV = "DEV"
+  }
 
-stages {
-  stage('Cleanup Workspace') {
-    steps {
-        cleanWs()
-        sh """
-        echo "Cleaned Up Workspace for ${APP_NAME}"
-        """
-      }
-    }
-  stage('Code Checkout') {
-    steps {
-        checkout([
-            $class: 'GitSCM',
-            branch: [[name: '*/main']],
-            userRemoteConfig: [[url: 'https://github.com/khongwka/khongwka/cdv1c03-repo.git']]
-            ])
+  stages {
+    stage('Cleanup Workspace') {
+      steps {
+          cleanWs()
+          sh """
+          echo "Cleaned Up Workspace for ${APP_NAME}"
+          """
         }
+      }
+    
+    stage('Code Checkout') {
+      steps {
+          checkout([
+              $class: 'GitSCM',
+              branches: [[name: '*/main']],  // Fixed: plural 'branches'
+              userRemoteConfigs: [[
+                  url: 'https://github.com/khongwka/cdv1c03-repo.git'  // Fixed URL
+              ]]
+          ])
+      }
     }
 
     stage('Code Build') {
