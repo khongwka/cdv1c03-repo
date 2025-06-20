@@ -1,61 +1,46 @@
-groovy
 pipeline {
-  agent {
-    node {
+    agent {
         label 'master'
-    }  // REMOVED EXTRA CLOSING BRACE HERE
-  }    // This closing brace was missing in previous versions
-  
-  tools {
-      maven 'maven3'
-  }
-
-  options {
-      buildDiscarder(logRotator(
-          daysToKeepStr: '15',
-          numToKeepStr: '10'
-      ))
-  }
-
-  environment {
-      APP_NAME = "STUDENT_APP"
-      APP_ENV = "DEV"
-  }
-
-  stages {
-    stage('Cleanup Workspace') {
-      steps {
-          cleanWs()
-          sh """
-          echo "Cleaned Up Workspace for ${APP_NAME}"
-          """
-        }
-      }
+    }
     
-    stage('Code Checkout') {
-      steps {
-          checkout([
-              $class: 'GitSCM',
-              branches: [[name: '*/main']], 
-              userRemoteConfigs: [[
-                  url: 'https://github.com/khongwka/cdv1c03-repo.git'
-              ]]
-          ])
-      }
+    tools {
+        maven 'maven3'
     }
 
-    stage('Code Build') {
-        steps {
-            sh 'mvn install -Dmaven.test.skip=false'
-        }
+    options {
+        buildDiscarder(logRotator(daysToKeepStr: '15', numToKeepStr: '10'))
     }
 
-    stage('Printing All Global Variables') {
-        steps {
-            sh """
-            env
-            """
+    environment {
+        APP_NAME = "STUDENT_APP"
+        APP_ENV = "DEV"
+    }
+
+    stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+                sh "echo 'Cleaned Up Workspace for ${APP_NAME}'"
+            }
+        }
+        
+        stage('Code Checkout') {
+            steps {
+                git branch: 'main', 
+                   url: 'https://github.com/khongwka/cdv1c03-repo.git'
+            }
+        }
+
+        stage('Code Build') {
+            steps {
+                sh 'mvn install -Dmaven.test.skip=false'
+            }
+        }
+
+        stage('Printing All Global Variables') {
+            steps {
+                sh 'env'
+            }
         }
     }
-  }
 }
