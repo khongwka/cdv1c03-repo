@@ -1,1 +1,10 @@
-jenkinsfile
+pipeline {
+  agent any
+  parameters {
+    string(name: 'VERSION', defaultValue: '1.0.0', description: 'Release version')
+}
+stages {
+  stage('Build') {
+    steps {
+      echo "Build version ${params.VERSION}
+}}}}
