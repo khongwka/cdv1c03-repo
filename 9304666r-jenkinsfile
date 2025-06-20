@@ -6,5 +6,21 @@ pipeline {
 stages {
   stage('Build') {
     steps {
-      echo "Build version ${params.VERSION}
-}}}}
+      echo "Build version ${params.VERSION}"
+      // Add build steps
+    }
+    stage('Test') {
+      steps {
+        echo "Testing version ${params.VERSION}"
+      // Add test steps
+    }
+    stage('Deploy') {
+      steps {
+        echo "Deploting version ${params.VERSION}"
+      // Add deployment steps
+    }
+  }
+}
+}
+}
+}
