@@ -1,26 +1,57 @@
 pipeline {
-  agent any
-  parameters {
-    string(name: 'VERSION', defaultValue: '1.0.0', description: 'Release version')
-}
-stages {
-  stage('Build') {
-    steps {
-      echo "Build version ${params.VERSION}"
-      // Add build steps
-    }
-    stage('Test') {
-      steps {
-        echo "Testing version ${params.VERSION}"
-      // Add test steps
-    }
-    stage('Deploy') {
-      steps {
-        echo "Deploting version ${params.VERSION}"
-      // Add deployment steps
+  agent {
+    node {
+        label 'main'
     }
   }
+  
+  tools {
+      maven 'maven3'
+  }
+
+  options {
+      buildDiscarder logRotator(
+                  daysToKeepStr: '15',
+                  numToKeepStr: '10'
+          )
+  }
+
+environment {
+    APP_NAME = "STUDENT_APP"
+    APP_ENV = "DEV"
 }
-}
-}
+
+stages {
+  stage('Cleanup Workspace') {
+    steps {
+        cleanWS()
+        sh """
+        echo "Cleaned Up Workspace for ${APP_NAME}"
+        """
+      }
+    }
+  stage('Code Checkout') {
+    steps {
+        checkout([
+            $class: 'GitSCM',
+            branch: [[name: '*/main']],
+            userRemoteConfig: [[url: 'https://github.com/khongwka/khongwka/cdv1c03-repo.git']]
+            ])
+        }
+    }
+
+    stage('Code Build') {
+        steps {
+            sh 'mvn install -Dmaven.test.skip=false'
+        }
+    }
+
+    stage('Printing All Global Variables'){
+        steps {
+            sh """
+            env
+            """
+        }
+      }
+    }
 }
