@@ -22,10 +22,25 @@ pipeline {
 
         stage('ST3-9304666r') {
             steps {
-                // Health check (simple approach: check if container is running)
                 script {
-                    def containerStatus = sh(returnStdout: true, script: 'docker inspect -f {{.State.Running}} server1-9304666r').trim()
-                    if (containerStatus == 'true') {
+                    // Wait for up to 30 seconds for the container to start
+                    def maxAttempts = 15
+                    def attempt = 0
+                    def isRunning = false
+
+                    while (attempt < maxAttempts && !isRunning) {
+                        attempt++
+                        sleep 2 // Wait for 2 seconds between attempts
+
+                        def containerStatus = sh(returnStdout: true, script: 'docker inspect -f {{.State.Running}} server1-9304666r').trim()
+                        isRunning = containerStatus == 'true'
+
+                        if (!isRunning) {
+                            echo "Attempt ${attempt}/${maxAttempts}: Container not running yet. Retrying..."
+                        }
+                    }
+
+                    if (isRunning) {
                         echo 'ST3-9304666r: Server1 is healthy - Health check done'
                     } else {
                         error 'Health check failed: Server1 container is not running'
