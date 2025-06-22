@@ -9,12 +9,12 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(daysToKeepStr: '15', numToKeepStr: '10'))
-        skipDefaultCheckout()  // Add this to prevent automatic checkout
     }
 
     environment {
         APP_NAME = "STUDENT_APP"
         APP_ENV = "DEV"
+        RELEASE_ENV = "ST1-9304666r"  // Added release environment variable
     }
 
     stages {
@@ -35,6 +35,23 @@ pipeline {
         stage('Code Build') {
             steps {
                 sh 'mvn install -Dmaven.test.skip=false'
+            }
+        }
+
+        // New release environment setup stage
+        stage('Setup Release Environment') {
+            steps {
+                script {
+                    // Create release environment
+                    sh """
+                    echo "Creating release environment: ${RELEASE_ENV}"
+                    # Add your actual environment setup commands here
+                    # For example: 
+                    #   terraform apply -auto-approve -var "env_name=${RELEASE_ENV}"
+                    #   kubectl create namespace ${RELEASE_ENV}
+                    """
+                }
+                echo "Setup Release Environment Completed."
             }
         }
 
