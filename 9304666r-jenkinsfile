@@ -10,6 +10,12 @@ pipeline {
 
         stage('ST2-9304666r') {
             steps {
+                // Remove previous container if exists
+                sh 'docker rm -f server1-9304666r || true'
+                
+                // Create new container
+                sh 'docker run -d -p 32700:80 --name server1-9304666r svr-image-9304666r'
+                
                 echo 'ST2-9304666r: Server1 is successfully created'
             }
         }
@@ -25,18 +31,18 @@ pipeline {
                         attempt++
                         sleep 2
 
-                        def containerStatus = sh(returnStdout: true, script: 'docker inspect -f {{.State.Running}} svr-9304666r').trim()
+                        def containerStatus = sh(returnStdout: true, script: 'docker inspect -f {{.State.Running}} server1-9304666r').trim()
                         isRunning = containerStatus == 'true'
 
                         if (!isRunning) {
-                            echo "Attempt ${attempt}/${maxAttempts}: Container svr-9304666r not running yet. Retrying..."
+                            echo "Attempt ${attempt}/${maxAttempts}: Container server1-9304666r not running yet. Retrying..."
                         }
                     }
 
                     if (isRunning) {
-                        echo 'ST3-9304666r: Container svr-9304666r is healthy - Health check done'
+                        echo 'ST3-9304666r: Server1 container is healthy - Health check done'
                     } else {
-                        error 'Health check failed: Container svr-9304666r is not running'
+                        error 'Health check failed: Server1 container is not running'
                     }
                 }
             }
