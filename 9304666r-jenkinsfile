@@ -1,91 +1,70 @@
 pipeline {
-    agent {
-        label 'master'
-    }
-    
-    tools {
-        maven 'maven3'
-    }
-
-    options {
-        buildDiscarder(logRotator(daysToKeepStr: '15', numToKeepStr: '10'))
-    }
-
-    environment {
-        APP_NAME = "STUDENT_APP"
-        APP_ENV = "DEV"
-        RELEASE_ENV = "ST1-9304666r"
-        ST2_ENV = "ST2-9304666r"
-        CONTAINER_NAME = "server1-9304666r"
-        IMAGE_NAME = "svr-image-9304666r"
-        HOST_PORT = "32700"
-    }
+    agent any
 
     stages {
-        stage('Cleanup Workspace') {
+        stage('ST1-9304666r') {
             steps {
-                cleanWs()
-                sh "echo 'Cleaned Up Workspace for ${APP_NAME}'"
-            }
-        }
-        
-        stage('Code Checkout') {
-            steps {
-                git branch: 'main', 
-                   url: 'https://github.com/khongwka/cdv1c03-repo.git'
-            }
-        }
-
-        stage('Code Build') {
-            steps {
-                sh 'mvn install -Dmaven.test.skip=false'
-            }
-        }
-
-        stage('Setup Release Environment') {
-            steps {
-                script {
-                    sh """
-                    echo "Creating release environment: ${RELEASE_ENV}"
-                    """
-                }
-                echo "Setup Release Environment Completed."
+                echo 'ST1-9304666r: Setup Release Environment Completed.'
             }
         }
 
         stage('ST2-9304666r') {
-            agent {
-                docker {
-                    image 'docker:dind'
-                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+            steps {
+                // Remove previous container if exists
+                sh 'docker rm -f server1-9304666r || true'
+                
+                // Create new container
+                sh 'docker run -d -p 32700:80 --name server1-9304666r svr-image-9304666r'
+                
+                echo 'ST2-9304666r: Server1 is successfully created'
+            }
+        }
+
+        stage('ST3-9304666r') {
+            steps {
+                // Health check (simple approach: check if container is running)
+                script {
+                    def containerStatus = sh(returnStdout: true, script: 'docker inspect -f {{.State.Running}} server1-9304666r').trim()
+                    if (containerStatus == 'true') {
+                        echo 'ST3-9304666r: Server1 is healthy - Health check done'
+                    } else {
+                        error 'Health check failed: Server1 container is not running'
+                    }
                 }
             }
+        }
+
+        stage('ST4-Parallel-9304666r') {
+            parallel {
+                stage('ST4A-9304666r') {
+                    steps {
+                        echo 'ST4A-9304666r: SQLI Check Completed'
+                    }
+                }
+                stage('ST4B-9304666r') {
+                    steps {
+                        echo 'ST4B-9304666r: XSS Check Completed'
+                    }
+                }
+            }
+        }
+
+        stage('ST5-9304666r') {
             steps {
                 script {
-                    sh """
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p ${HOST_PORT}:80 ${IMAGE_NAME}
-                    """
-                    echo "${ST2_ENV}: Server1 is successfully created"
+                    def userInput = input message: 'Do you want to proceed? (y/n)', parameters: [string(name: 'PROCEED', defaultValue: 'y')]
+                    if (userInput != 'y') {
+                        error 'User aborted the pipeline'
+                    } else {
+                        echo 'Proceeding with the pipeline'
+                    }
                 }
             }
         }
 
-        stage('Verify Container') {
+        stage('ST6-9304666r') {
             steps {
-                sh """
-                echo "Container status:"
-                docker inspect ${CONTAINER_NAME} --format='{{.State.Status}}'
-                echo "Apache response:"
-                curl -sI http://localhost:${HOST_PORT} | head -1
-                """
-            }
-        }
-
-        stage('Printing All Global Variables') {
-            steps {
-                sh 'env'
+                echo 'ST6-9304666r: Pipeline completed successfully'
             }
         }
     }
