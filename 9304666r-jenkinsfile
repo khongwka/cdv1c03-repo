@@ -49,6 +49,10 @@ pipeline {
         }
 
         stage('ST4-Parallel-9304666r') {
+            steps {
+                echo 'ST4-Parallel-9304666r: Security Scrutinises'
+            }
+            
             parallel {
                 stage('ST4A-9304666r') {
                     steps {
@@ -60,9 +64,6 @@ pipeline {
                         echo 'ST4B-9304666r: XSS Check Completed'
                     }
                 }
-            }
-            steps {
-                echo 'ST4-Parallel-9304666r: Security Scrutinises'
             }
         }
 
