@@ -61,6 +61,9 @@ pipeline {
                     }
                 }
             }
+            steps {
+                echo 'ST4-Parallel-9304666r: Security Scrutinises'
+            }
         }
 
         stage('ST5-9304666r') {
