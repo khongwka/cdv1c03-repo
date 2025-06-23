@@ -78,7 +78,7 @@ pipeline {
 
         stage('ST6-9304666r') {
             steps {
-                echo 'ST6-9304666r: Pipeline completed successfully'
+                echo 'ST6-9304666r: Ready for next phase'
             }
         }
     }
